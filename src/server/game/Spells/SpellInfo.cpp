@@ -1549,7 +1549,19 @@ bool SpellInfo::IsRequiringDeadTarget() const
 
 bool SpellInfo::IsAllowingDeadTarget() const
 {
-    return HasAttribute(SPELL_ATTR2_CAN_TARGET_DEAD) || Targets & (TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_DEAD);
+    if (HasAttribute(SPELL_ATTR2_CAN_TARGET_DEAD) || Targets & (TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_DEAD))
+        return true;
+
+    for (SpellEffectInfo const* effect : _effects)
+    {
+        if (!effect)
+            continue;
+
+        if (effect->TargetA.GetObjectType() == TARGET_OBJECT_TYPE_CORPSE || effect->TargetB.GetObjectType() == TARGET_OBJECT_TYPE_CORPSE)
+            return true;
+    }
+
+    return false;
 }
 
 bool SpellInfo::IsGroupBuff() const
@@ -4218,7 +4230,11 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
             {
                 case 29214: // Wrath of the Plaguebringer
                 case 34700: // Allergic Reaction
+                case 41914: // Parasitic Shadowfiend (Illidan)
+                case 41917: // Parasitic Shadowfiend (Illidan)
                 case 54836: // Wrath of the Plaguebringer
+                case 61987: // Avenging Wrath Marker
+                case 61988: // Divine Shield exclude aura
                     return false;
                 case 30877: // Tag Murloc
                 case 61716: // Rabbit Costume
